@@ -11,13 +11,13 @@ class BookingList(generics.ListCreateAPIView):
     
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from .permissions import IsOwnerOrReadOnly
 
 class BookingDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = (TokenAuthentication, )    # 어떤 인증방식으로 인증해야할지 설정하는 옵션
-    permission_classes = (IsAuthenticated, )    # 인증을 해야만 볼 수 있는 옵션
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)    # 인증을 해야만 볼 수 있는 옵션
     
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
-
 
 
