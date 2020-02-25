@@ -3,6 +3,7 @@ from django.conf import settings
 
 # Create your models here.
 class Booking(models.Model):
+    # related_name : 불러올 때 어떻게 불러올까?
     subscriber = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT,related_name='bookings')
     date_from = models.DateField()
     date_to = models.DateField(null=True,blank=True)
@@ -20,4 +21,4 @@ class Booking(models.Model):
     class Meta:
         # 예약시간의 내림차순으로 설정
         # 객체들을 어떤 기준으로 정렬할 지 설정하는 옵션
-        ordering = ['-date_form']
+        ordering = ['-date_from']
