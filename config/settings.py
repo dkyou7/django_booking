@@ -126,7 +126,7 @@ STATIC_URL = '/static/'
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         "api_key": {
-            "type": "apikey",
+            "type": "apiKey",
             "name": "Authorization",
             "in": "header"
         },
