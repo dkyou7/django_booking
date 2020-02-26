@@ -163,9 +163,109 @@ urlpatterns = [
 
 ### 9. API 문서 만들기
 
+- API 문서를 자동으로 생성해주는 안정적 버전의 앱 설치
+
+> pip install django-rest-swagger==2.1.2
+
+```python
+INSTALLED_APPS=[
+    'rest_framework_swagger'
+]
+```
+
+`config/urls.py`
+
+```python
+from rest_framework_swagger.views import get_swagger_view
+
+urlpatterns = [
+    path('api/doc/',get_swagger_view(title='Booking API Manual')),
+]
+```
+
 ### 10. 인증 추가하기
+
+- 토큰 인증 방식 사용해보기
+
+```python
+INSTALLED_APPS=[
+    'rest_framework.authtoken'
+]
+```
+
+- 앱을 하나 추가하면 migrate 명령을 실시해야 한다.
+
+> python manage.py migrate
+
+- 각각의 뷰에 인증 옵션 추가한다.
+
+```python
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+
+class BookingDetail(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = (TokenAuthentication, )    # 어떤 인증방식으로 인증해야할지 설정하는 옵션
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)    # 인증을 해야만 볼 수 있는 옵션
+    
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+```
+
+`config/urls.py`
+
+```python
+from rest_framework.authtoken import views
+
+urlpatterns = [
+    path('api/get_token',views.obtain_auth_token),
+]
+```
 
 ### 11. 문서에 Token 기능 사용하기
 
+```python
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        "api_key": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        },
+    },
+    "LOGIN_URL" : "/admin/login/",
+    "LOGOUT_URL" : "/admin/logout/"
+}
+```
+
 ### 12. 추가 권한 설정하기
+
+`booking/permissions.py`
+
+```python
+from rest_framework import permissions
+
+class IsOwnerOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.subscriber == request.user or request.user.is_superuser
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return obj.subscriber == request.user or request.user.is_superuser
+```
+
+`booking/views.py`
+
+```python
+from .permissions import IsOwnerOrReadOnly
+
+class BookingDetail(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = (TokenAuthentication, )    # 어떤 인증방식으로 인증해야할지 설정하는 옵션
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)    # 인증을 해야만 볼 수 있는 옵션
+    
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+```
 
